@@ -5,97 +5,140 @@
 <title>삼기농협 로컬푸드 할인 이벤트</title>
 
 <style>
-    body {
-        text-align:center;
-        font-family:'Arial';
-        margin:0;
-        background: linear-gradient(to bottom, #2e7d32, #81c784);
-        color:white;
-    }
+body {
+    text-align:center;
+    font-family:'Arial';
+    margin:0;
+    background: linear-gradient(to bottom, #2e7d32, #81c784);
+    color:white;
+}
 
-    .container {
-        padding:50px;
-    }
+.container {
+    padding:50px;
+}
 
-    h1 {
-        font-size:60px;
-        margin-bottom:10px;
-    }
+h1 {
+    font-size:60px;
+}
 
-    h2 {
-        font-size:40px;
-        margin:20px 0;
-        min-height:60px;
-    }
+#result {
+    font-size:55px;
+    margin:30px 0;
+    height:80px;
+    transition:0.3s;
+}
 
-    button {
-        font-size:30px;
-        padding:20px 40px;
-        border:none;
-        border-radius:15px;
-        background-color:#ffeb3b;
-        color:black;
-        cursor:pointer;
-    }
+button {
+    font-size:30px;
+    padding:20px 40px;
+    margin:10px;
+    border:none;
+    border-radius:15px;
+    cursor:pointer;
+}
 
-    button:hover {
-        background-color:#ffc107;
-    }
+#drawBtn { background-color:#ffeb3b; }
+#resetBtn { background-color:#ffffff; }
 
-    .banner {
-        width:100%;
-        max-height:300px;
-        object-fit:cover;
-    }
+.banner {
+    width:100%;
+    max-height:300px;
+    object-fit:cover;
+}
 </style>
 
 </head>
 
 <body>
 
-<img class="banner" src="https://images.unsplash.com/photo-1606787366850-de6330128bfc" alt="로컬푸드 이미지">
+<img class="banner" src="https://images.unsplash.com/photo-1606787366850-de6330128bfc">
 
 <div class="container">
 
 <h1>🥩 삼기농협 로컬푸드</h1>
 <h1>🎉 할인 추첨 이벤트 🎉</h1>
 
-<h2 id="result">버튼을 눌러주세요!</h2>
+<div id="result">버튼을 눌러주세요!</div>
 
-<button onclick="draw()">🎯 추첨하기</button>
+<button id="drawBtn" onclick="draw()">🎯 추첨하기</button>
 
 </div>
 
+<audio id="winSound" src="https://www.soundjay.com/button/sounds/button-3.mp3"></audio>
+
 <script>
-// 1000개 확률 고정
+// 🔥 30분 제한 (로컬 저장)
+const COOLDOWN = 30 * 60 * 1000; // 30분
+
+function canPlay() {
+    let last = localStorage.getItem("lastDraw");
+    if (!last) return true;
+
+    let now = new Date().getTime();
+    return (now - last) > COOLDOWN;
+}
+
+function saveTime() {
+    localStorage.setItem("lastDraw", new Date().getTime());
+}
+
+// 🎯 1000명당 1번 30%
 let tickets = [];
 
 // 꽝
-for (let i = 0; i < 600; i++) tickets.push("꽝 😢");
+for (let i = 0; i < 650; i++) tickets.push("꽝");
 
 // 할인
 for (let i = 0; i < 200; i++) tickets.push("5%");
-for (let i = 0; i < 120; i++) tickets.push("10%");
-for (let i = 0; i < 60; i++) tickets.push("15%");
-for (let i = 0; i < 18; i++) tickets.push("20%");
-for (let i = 0; i < 2; i++) tickets.push("🎉 30%");
+for (let i = 0; i < 100; i++) tickets.push("10%");
+for (let i = 0; i < 40; i++) tickets.push("15%");
+for (let i = 0; i < 9; i++) tickets.push("20%");
+
+// ⭐ 핵심: 30% 1개만
+tickets.push("30%");
 
 // 섞기
 tickets.sort(() => Math.random() - 0.5);
 
 function draw() {
-    if (tickets.length === 0) {
-        document.getElementById("result").innerText = "이벤트 종료!";
+    let resultDiv = document.getElementById("result");
+
+    if (!canPlay()) {
+        resultDiv.innerText = "⏱️ 30분 후 다시 참여 가능!";
+        resultDiv.style.color = "#ffcc00";
         return;
     }
 
-    let result = tickets.pop();
-
-    if(result.includes("꽝")){
-        document.getElementById("result").innerText = "꽝 😢 다음 기회에!";
-    } else {
-        document.getElementById("result").innerText = result + " 할인 당첨!";
+    if (tickets.length === 0) {
+        resultDiv.innerText = "이벤트 종료!";
+        return;
     }
+
+    resultDiv.innerText = "🎯 추첨중...";
+    resultDiv.style.color = "white";
+
+    setTimeout(() => {
+        let result = tickets.pop();
+
+        if(result === "꽝"){
+            resultDiv.innerText = "꽝 😢";
+            resultDiv.style.color = "#ff5252";
+        } 
+        else if(result === "30%"){
+            resultDiv.innerText = "🎉🎉 30% 당첨!!! 🎉🎉";
+            resultDiv.style.color = "#ffd700";
+            resultDiv.style.fontSize = "70px";
+            document.getElementById("winSound").play();
+        }
+        else {
+            resultDiv.innerText = result + " 할인!";
+            resultDiv.style.color = "#ffffff";
+            document.getElementById("winSound").play();
+        }
+
+        saveTime();
+
+    }, 1200);
 }
 </script>
 
